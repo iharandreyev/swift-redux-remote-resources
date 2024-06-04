@@ -5,7 +5,7 @@ import RemoteResources
 public enum PagedRemoteResourceAction<
     Element: Identifiable,
     PagePath: PagePathType,
-    Filter: Equatable
+    Filter: PagedRemoteResourceFilter
 > {
     public typealias ViewAction = PagedRemoteResourceAction_View<Filter>
     public typealias InternalAction = PagedRemoteResourceAction_Internal<Element, PagePath>
@@ -19,11 +19,11 @@ extension PagedRemoteResourceAction: Equatable where Element: Equatable { }
 
 @CasePathable
 public enum PagedRemoteResourceAction_View<
-    Filter
+    Filter: PagedRemoteResourceFilter
 > {
     case reload
     case loadNext
-    case applyFilter(Filter?)
+    case applyFilter(Filter)
 }
 
 extension PagedRemoteResourceAction_View: Equatable where Filter: Equatable { }

@@ -4,7 +4,7 @@ extension Pages<TestElement, TestPagePath> {
     @inline(__always)
     static func partial(
         count: UInt,
-        filter: String? = nil,
+        filter: String = .empty(),
         total: UInt
     ) throws -> Self {
         let pages = try [Page<TestElement, TestPagePath>].partial(
@@ -17,7 +17,7 @@ extension Pages<TestElement, TestPagePath> {
     
     @inline(__always)
     static func complete(
-        filter: String? = nil,
+        filter: String = .empty(),
         total: UInt = 1
     ) throws -> Self {
         let pages = try [Page<TestElement, TestPagePath>].complete(

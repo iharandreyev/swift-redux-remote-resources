@@ -5,7 +5,7 @@ import RemoteResources
 public struct PagedRemoteResourceState<
     Element: Identifiable,
     PagePath: PagePathType,
-    Filter: Equatable
+    Filter: PagedRemoteResourceFilter
 > {
     public typealias Element = Element
     public typealias PagePath = PagePath
@@ -14,28 +14,16 @@ public struct PagedRemoteResourceState<
 
     internal(set) public var content: Content
     internal(set) public var pendingReload: Bool
-    internal(set) public var filter: Filter?
-}
+    internal(set) public var filter: Filter
 
-extension PagedRemoteResourceState {
-    @_disfavoredOverload
     public init(
         content: Content = .none,
         pendingReload: Bool = false,
-        filter: Filter? = nil
+        filter: Filter = .empty()
     ) {
         self.content = content
         self.pendingReload = pendingReload
         self.filter = filter
-    }
-    
-    public init(
-        content: Content = .none,
-        pendingReload: Bool = false
-    ) where Filter == EquatableByDescription<Void> {
-        self.content = content
-        self.pendingReload = pendingReload
-        self.filter = nil
     }
 }
 

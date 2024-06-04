@@ -6,11 +6,11 @@ extension Store {
     func filter<
         Element: Identifiable,
         PagePath: PagePathType,
-        Filter: Equatable
-    >() -> Binding<Filter?> where State == PagedRemoteResourceState<Element, PagePath, Filter>, Action == PagedRemoteResourceAction<Element, PagePath, Filter> {
+        Filter: PagedRemoteResourceFilter
+    >() -> Binding<Filter> where State == PagedRemoteResourceState<Element, PagePath, Filter>, Action == PagedRemoteResourceAction<Element, PagePath, Filter> {
         Binding(
             get: { [weak self] in
-                self?.state.filter
+                self?.state.filter ?? .empty()
             },
             set: { [weak self] newValue in
                 guard let self else { return }

@@ -25,8 +25,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testReloadSuccessWhenStateIsPartial() async throws {
         let totalPages: UInt = 5
         let state = try SUT.State(
-            content: .partialPending(count: 2, total: totalPages),
-            filter: nil
+            content: .partialPending(count: 2, total: totalPages)
         )
         let environment = SUT.Environment.succeeding(totalPages: totalPages)
         let store = TestStoreOf<SUT>.create(with: state, environment: environment)
@@ -44,8 +43,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testReloadSuccessWhenStateIsComplete() async throws {
         let totalPages: UInt = 3
         let state = try SUT.State(
-            content: .complete(total: totalPages),
-            filter: nil
+            content: .complete(total: totalPages)
         )
         let environment = SUT.Environment.succeeding(totalPages: totalPages)
         let store = TestStoreOf<SUT>.create(with: state, environment: environment)
@@ -79,8 +77,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testReloadFailureWhenStateIsPartial() async throws {
         let totalPages: UInt = 5
         let state = try SUT.State(
-            content: .partialPending(count: 2, total: totalPages),
-            filter: nil
+            content: .partialPending(count: 2, total: totalPages)
         )
         let error = AnyDebugError("test_error")
         let environment = SUT.Environment.failing(with: error)
@@ -99,8 +96,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testReloadFailureWhenStateIsComplete() async throws {
         let totalPages: UInt = 5
         let state = try SUT.State(
-            content: .complete(total: totalPages),
-            filter: nil
+            content: .complete(total: totalPages)
         )
         let error = AnyDebugError("test_error")
         let environment = SUT.Environment.failing(with: error)
@@ -121,8 +117,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testLoadNextSuccessWhenNextPageIsNotTheLastOne() async throws {
         let totalPages: UInt = 5
         let state = try SUT.State(
-            content: .partialPending(count: 2, total: totalPages),
-            filter: nil
+            content: .partialPending(count: 2, total: totalPages)
         )
         let environment = SUT.Environment.succeeding(totalPages: totalPages)
         let store = TestStoreOf<SUT>.create(with: state, environment: environment)
@@ -139,8 +134,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testLoadNextSuccessWhenNextPageIsTheLastOne() async throws {
         let totalPages: UInt = 5
         let state = try SUT.State(
-            content: .partialPending(count: totalPages - 1, total: totalPages),
-            filter: nil
+            content: .partialPending(count: totalPages - 1, total: totalPages)
         )
         let environment = SUT.Environment.succeeding(totalPages: totalPages)
         let store = TestStoreOf<SUT>.create(with: state, environment: environment)
@@ -157,8 +151,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testLoadNextFailureWhenNextPageIsNotTheLastOne() async throws {
         let totalPages: UInt = 5
         let state = try SUT.State(
-            content: .partialPending(count: 2, total: totalPages),
-            filter: nil
+            content: .partialPending(count: 2, total: totalPages)
         )
         let error = AnyDebugError("test_error")
         let environment = SUT.Environment.failing(with: error)
@@ -176,8 +169,7 @@ final class PagedRemoteResourceTests: XCTestCase {
     func testLoadNextPageImpossibleWhenStateIsComplete() async throws {
         let totalPages: UInt = 5
         let state = try SUT.State(
-            content: .complete(total: totalPages),
-            filter: nil
+            content: .complete(total: totalPages)
         )
         let environment = SUT.Environment.succeeding(totalPages: totalPages)
         let store = TestStoreOf<SUT>.create(with: state, environment: environment)
@@ -193,8 +185,7 @@ final class PagedRemoteResourceTests: XCTestCase {
         let totalPages: UInt = 5
         let filter = "test_filter"
         let state = try SUT.State(
-            content: .partialPending(count: 2, total: totalPages),
-            filter: nil
+            content: .partialPending(count: 2, total: totalPages)
         )
         let environment = SUT.Environment.succeeding(totalPages: totalPages)
         let store = TestStoreOf<SUT>.create(with: state, environment: environment)
@@ -227,8 +218,7 @@ final class PagedRemoteResourceTests: XCTestCase {
         let totalPages: UInt = 5
         let filter = "test_filter"
         let state = try SUT.State(
-            content: .partialPending(count: 2, total: totalPages),
-            filter: nil
+            content: .partialPending(count: 2, total: totalPages)
         )
         let error = AnyDebugError("test_error")
         let environment = SUT.Environment.failing(with: error)
@@ -322,9 +312,9 @@ final class PagedRemoteResourceTests: XCTestCase {
             state.content = try .partialPending(count: 2, filter: filter, total: totalPages)
         }
         
-        await store.send(.view(.applyFilter(nil))) { state in
+        await store.send(.view(.applyFilter(.empty()))) { state in
             state.content = try .partialPending(count: 2, filter: filter, total: totalPages)
-            state.filter = nil
+            state.filter = .empty()
             state.pendingReload = true
         }
         await store.receive(\.internal.applyNextPage) { state in

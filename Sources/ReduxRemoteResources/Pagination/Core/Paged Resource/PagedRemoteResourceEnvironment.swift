@@ -6,7 +6,7 @@ public struct PagedRemoteResourceEnvironment<
     PagePath: PagePathType,
     Filter
 > {
-    public typealias LoadPageClosure = (_ pagePath: PagePath, _ filter: Filter?) async throws -> Page<Element, PagePath>
+    public typealias LoadPageClosure = (_ pagePath: PagePath, _ filter: Filter) async throws -> Page<Element, PagePath>
 
     internal(set) public var firstPage: () throws -> PagePath
     internal(set) public var loadPage: LoadPageClosure

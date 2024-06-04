@@ -4,7 +4,7 @@ import RemoteResources
 public struct PagedRemoteResource<
     Element: Identifiable,
     PagePath: PagePathType,
-    Filter: Equatable
+    Filter: PagedRemoteResourceFilter
 >: Reducer {
     public typealias State = PagedRemoteResourceState<Element, PagePath, Filter>
     public typealias Action = PagedRemoteResourceAction<Element, PagePath, Filter>
@@ -170,11 +170,11 @@ public struct PagedRemoteResource<
     
     // MARK: - Loading
     
-    private func reload(with filter: Filter?) throws -> Effect<Action> {
+    private func reload(with filter: Filter) throws -> Effect<Action> {
         try loadPage(at: environment.firstPage(), filter: filter)
     }
     
-    private func loadPage(at path: PagePath, filter: Filter?) -> Effect<Action> {
+    private func loadPage(at path: PagePath, filter: Filter) -> Effect<Action> {
         .run(
             priority: .background,
             operation: { sendAction in

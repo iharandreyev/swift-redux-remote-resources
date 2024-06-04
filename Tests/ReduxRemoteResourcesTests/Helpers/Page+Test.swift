@@ -3,11 +3,11 @@ import RemoteResources
 extension Page<TestElement, TestPagePath> {
     static func test(
         offset: UInt,
-        filter: String? = nil,
+        filter: String = .empty(),
         total: UInt = 1
     ) throws -> Self {
         return try Self(
-            contents: [.test("\(offset)" + (filter.map { " + " + $0 } ?? ""))],
+            contents: [.test("\(offset)" + (filter.isEmpty ? "" : " + " + filter))],
             path: TestPagePath(offset: offset, total: total)
         )
     }
@@ -15,7 +15,7 @@ extension Page<TestElement, TestPagePath> {
     static func test(
         after currentOffset: UInt,
         offset: Int,
-        filter: String? = nil,
+        filter: String = .empty(),
         total: UInt = 1
     ) throws -> Self {
         let offset = currentOffset + UInt(offset)
@@ -26,7 +26,7 @@ extension Page<TestElement, TestPagePath> {
 extension Array {
     static func partial(
         count: UInt,
-        filter: String? = nil,
+        filter: String = .empty(),
         total: UInt
     ) throws -> Self where Element == Page<TestElement, TestPagePath> {
         guard count <= total else {
@@ -39,7 +39,7 @@ extension Array {
     }
     
     static func complete(
-        filter: String? = nil,
+        filter: String = .empty(),
         total: UInt = 1
     ) throws -> Self where Element == Page<TestElement, TestPagePath> {
         try partial(count: total, filter: filter, total: total)

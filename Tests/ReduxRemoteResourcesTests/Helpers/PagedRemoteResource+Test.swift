@@ -5,7 +5,7 @@ extension PagedRemoteResourceState where Element == TestElement, PagePath == Tes
     @inline(__always)
     init(
         pages: [Page<TestElement, TestPagePath>],
-        filter: Filter? = nil
+        filter: Filter = .empty()
     ) throws {
         guard !pages.isEmpty else {
             self.init(filter: filter)
