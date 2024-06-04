@@ -5,7 +5,7 @@ import RemoteResources
 public struct PagedRemoteResourceState<
     Element: Identifiable,
     PagePath: PagePathType,
-    Filter
+    Filter: Equatable
 > {
     public typealias Content = PagedContentState<Element, PagePath>
     
@@ -24,7 +24,7 @@ public struct PagedRemoteResourceState<
     }
 }
 
-extension PagedRemoteResourceState: Equatable where Element: Equatable, Filter: Equatable { }
+extension PagedRemoteResourceState: Equatable where Element: Equatable { }
 
 #warning("TODO: Rework with a macro")
 extension PagedContentState: CustomShortStringConvertible {

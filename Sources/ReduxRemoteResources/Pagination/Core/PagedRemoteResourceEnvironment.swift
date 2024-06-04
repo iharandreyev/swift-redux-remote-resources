@@ -2,9 +2,9 @@ import ComposableArchitecture
 import RemoteResources
 
 public struct PagedRemoteResourceEnvironment<
-    Element: Identifiable & Equatable,
+    Element: Identifiable,
     PagePath: PagePathType,
-    Filter: Equatable
+    Filter
 > {
     public typealias LoadPageClosure = (_ pagePath: PagePath, _ filter: Filter?) async throws -> Page<Element, PagePath>
 

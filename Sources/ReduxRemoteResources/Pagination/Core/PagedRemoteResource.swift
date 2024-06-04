@@ -2,7 +2,7 @@ import ComposableArchitecture
 import RemoteResources
 
 public struct PagedRemoteResource<
-    Element: Identifiable & Equatable,
+    Element: Identifiable,
     PagePath: PagePathType,
     Filter: Equatable
 >: Reducer {
