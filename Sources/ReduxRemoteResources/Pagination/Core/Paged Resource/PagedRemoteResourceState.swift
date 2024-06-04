@@ -7,8 +7,8 @@ public struct PagedRemoteResourceState<
     PagePath: PagePathType,
     Filter: Equatable
 > {
-    public typealias Content = PagedContentState<Element, PagePath>
-    
+    public typealias Content = PagedRemoteResourceStateContent<Element, PagePath>
+
     internal(set) public var content: Content
     internal(set) public var pendingReload: Bool
     internal(set) public var filter: Filter?
@@ -36,8 +36,6 @@ extension PagedRemoteResourceState {
     }
 }
 
-extension PagedRemoteResourceState: Equatable where Element: Equatable { }
-
 #warning("TODO: Rework with a macro")
 extension PagedContentState: CustomShortStringConvertible {
     public var shortDescription: String {
@@ -50,3 +48,28 @@ extension PagedContentState: CustomShortStringConvertible {
         }
     }
 }
+
+extension PagedRemoteResourceState: Equatable where Element: Equatable { }
+
+@ObservableState
+public struct PagedRemoteResourceStateContent<
+    Element: Identifiable,
+    PagePath: PagePathType
+>: PagedContentStateWrapper {
+    internal(set) public var value: PagedContentState<Element, PagePath>
+    
+    public init(_ value: PagedContentState<Element, PagePath>) {
+        self.value = value
+    }
+}
+
+extension PagedRemoteResourceStateContent {
+    var canAppendNext: Bool {
+        switch value {
+        case .none, .loadingFirst, .partial: return true
+        case .complete, .failure: return false
+        }
+    }
+}
+
+extension PagedRemoteResourceStateContent: Equatable where Element: Equatable { }

@@ -39,7 +39,7 @@ public struct PagedRemoteResource<
     ) throws -> Effect<Action> {
         switch action {
         case .reload:
-            switch state.content {
+            switch state.content.value {
             case .none, .loadingFirst, .failure:
                 state.content = .loadingFirst
             case .partial, .complete:
@@ -52,11 +52,11 @@ public struct PagedRemoteResource<
             return try reload(with: state.filter)
             
         case .loadNext:
-            guard case let .partial(available, next) = state.content else {
+            guard case let .partial(available, next) = state.content.value else {
                 throw InvalidStateForActionWarning(
                     Self.self,
                     action: action,
-                    invalidState: state.content,
+                    invalidState: state.content.value,
                     validStates: "partial"
                 )
             }
@@ -81,7 +81,7 @@ public struct PagedRemoteResource<
     ) throws -> Effect<Action> {
         switch action {
         case let .applyNextPage(page):
-            switch state.content {
+            switch state.content.value {
             case .none, .loadingFirst, .complete, .failure:
                 state.content = try createPages(withFirstPage: page)
                 state.pendingReload = false
@@ -101,7 +101,7 @@ public struct PagedRemoteResource<
             }
             
         case let .failToLoadNextPage(path, error):
-            switch state.content {
+            switch state.content.value {
             case .none, .loadingFirst, .failure:
                 state.content = .failure(path, error)
                 state.pendingReload = false
@@ -113,7 +113,7 @@ public struct PagedRemoteResource<
                     throw InvalidStateForActionWarning(
                         Self.self,
                         action: action,
-                        invalidState: state.content,
+                        invalidState: state.content.value,
                         validStates: "loadingFirst", "partial"
                     )
                 }

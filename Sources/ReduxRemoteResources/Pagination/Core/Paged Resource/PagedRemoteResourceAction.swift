@@ -7,8 +7,8 @@ public enum PagedRemoteResourceAction<
     PagePath: PagePathType,
     Filter: Equatable
 > {
-    public typealias ViewAction = PagedRemoteResourceViewAction<Filter>
-    public typealias InternalAction = PagedRemoteResourceInternalAction<Element, PagePath>
+    public typealias ViewAction = PagedRemoteResourceAction_View<Filter>
+    public typealias InternalAction = PagedRemoteResourceAction_Internal<Element, PagePath>
     
     case view(ViewAction)
     case `internal`(InternalAction)
@@ -18,7 +18,7 @@ public enum PagedRemoteResourceAction<
 extension PagedRemoteResourceAction: Equatable where Element: Equatable { }
 
 @CasePathable
-public enum PagedRemoteResourceViewAction<
+public enum PagedRemoteResourceAction_View<
     Filter
 > {
     case reload
@@ -26,10 +26,10 @@ public enum PagedRemoteResourceViewAction<
     case applyFilter(Filter?)
 }
 
-extension PagedRemoteResourceViewAction: Equatable where Filter: Equatable { }
+extension PagedRemoteResourceAction_View: Equatable where Filter: Equatable { }
 
 @CasePathable
-public enum PagedRemoteResourceInternalAction<
+public enum PagedRemoteResourceAction_Internal<
     Element: Identifiable,
     PagePath: PagePathType
 > {
@@ -37,7 +37,7 @@ public enum PagedRemoteResourceInternalAction<
     case failToLoadNextPage(PagePath, EquatableByDescription<Error>)
 }
 
-extension PagedRemoteResourceInternalAction: Equatable where Element: Equatable { }
+extension PagedRemoteResourceAction_Internal: Equatable where Element: Equatable { }
 
 extension PagedRemoteResourceAction: CustomShortStringConvertible {
     public var shortDescription: String {
@@ -50,7 +50,7 @@ extension PagedRemoteResourceAction: CustomShortStringConvertible {
 }
 
 #warning("TODO: Rework with a macro")
-extension PagedRemoteResourceViewAction: CustomShortStringConvertible {
+extension PagedRemoteResourceAction_View: CustomShortStringConvertible {
     public var shortDescription: String {
         switch self {
         case .reload: return "reload"
@@ -61,7 +61,7 @@ extension PagedRemoteResourceViewAction: CustomShortStringConvertible {
 }
 
 #warning("TODO: Rework with a macro")
-extension PagedRemoteResourceInternalAction: CustomShortStringConvertible {
+extension PagedRemoteResourceAction_Internal: CustomShortStringConvertible {
     public var shortDescription: String {
         switch self {
         case .applyNextPage: return "applyNextPage"
