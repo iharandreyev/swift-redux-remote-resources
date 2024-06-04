@@ -91,14 +91,6 @@ extension Paged.UsingPageIndex.DebugRemoteResource.Environment {
 
 struct SomeDebugError: Error { }
 
-private final class MutableReference<Value> {
-    var value: Value
-    
-    init(_ value: Value) {
-        self.value = value
-    }
-}
-
 private extension Array where Element == Identified<String, String> {
     static func debugPageContents(
         pageIndex: UInt,
