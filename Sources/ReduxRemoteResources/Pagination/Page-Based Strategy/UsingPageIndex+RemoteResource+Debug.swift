@@ -76,7 +76,7 @@ extension Paged.UsingPageIndex.DebugRemoteResource.Environment {
                     attempt.value += 1
                 }
                 
-                if attempt.value % 3 == 0 {
+                if attempt.value > 0, attempt.value % 3 == 0 {
                     throw error
                 }
 
@@ -103,13 +103,13 @@ private extension Array where Element == Identified<String, String> {
     static func debugPageContents(
         pageIndex: UInt,
         count: UInt,
-        filter: String?
+        filter: String
     ) -> Self {
         let startIndex = pageIndex * count
         let endIndex = startIndex + count
         
         return (startIndex ..< endIndex).map { offset in
-            let value = "Element #\(offset)" + (filter.map { " [\($0)]" } ?? "")
+            let value = "Element #\(offset)" + (filter.isEmpty ? "" : " [\(filter)]")
             return Identified(value, id: value)
         }
     }
