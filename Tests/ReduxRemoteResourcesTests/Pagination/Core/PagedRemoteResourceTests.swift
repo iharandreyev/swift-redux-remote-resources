@@ -239,7 +239,8 @@ final class PagedRemoteResourceTests: XCTestCase {
     
     @MainActor
     func testLoadCancellsExistingEffects() async throws {
-        let environment = SUT.Environment.succeeding(loadPageWithDelay: true)
+        let queue = TestDispatchQueue()
+        let environment = SUT.Environment.succeeding(delayedOn: queue)
         let store = TestStoreOf<SUT>.create(environment: environment)
         
         await store.send(.view(.reload))  { state in
@@ -248,6 +249,9 @@ final class PagedRemoteResourceTests: XCTestCase {
         }
         await store.send(.view(.reload))
         await store.send(.view(.reload))
+        
+        queue.advance(by: 1)
+        
         await store.receive(\.internal.applyNextPage) { state in
             state.content = try .complete(Pages(firstPage: .test(offset: 0)))
             state.pendingReload = false
@@ -356,7 +360,7 @@ private extension SUT.Environment {
     @inline(__always)
     static func succeeding(
         totalPages: UInt = 1,
-        loadPageWithDelay: Bool = false
+        delayedOn queue: DispatchQueueType = InstantDispatchQueue()
     ) -> Self {
         Self.init(
             loadPage: { path, filter in
@@ -366,20 +370,20 @@ private extension SUT.Environment {
                     total: totalPages
                 )
             },
-            loadPageWithDelay: loadPageWithDelay
+            delayedOn: queue
         )
     }
     
     @inline(__always)
     static func failing(
         with error: Error,
-        loadPageWithDelay: Bool = false
+        delayedOn queue: DispatchQueueType = InstantDispatchQueue()
     ) -> Self {
         Self.init(
             loadPage: { path, filter in
                 throw error
             },
-            loadPageWithDelay: loadPageWithDelay
+            delayedOn: queue
         )
     }
     
@@ -387,18 +391,14 @@ private extension SUT.Environment {
     private init(
         firstPage: (() throws -> PagePath)? = nil,
         loadPage: @escaping LoadPageClosure,
-        loadPageWithDelay: Bool
+        delayedOn queue: DispatchQueueType
     ) {
-        let loadPage: LoadPageClosure = loadPageWithDelay
-        ? { path, filter in
-            try await Task.sleepToForceContinuation()
-            return try await loadPage(path, filter)
-        }
-        : loadPage
-        
         self.init(
             firstPage: { TestPagePath.first() },
-            loadPage: loadPage
+            loadPage: { path, filter in
+                await queue.sleep(for: 0.5)
+                return try await loadPage(path, filter)
+            }
         )
     }
 }
