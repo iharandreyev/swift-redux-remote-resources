@@ -15,6 +15,8 @@ public struct PagedRemoteResource<
     @Dependency(Self.Environment.self)
     private var environment
     
+    public init() { }
+    
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {

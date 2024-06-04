@@ -7,7 +7,10 @@ public struct PagedRemoteResourceState<
     PagePath: PagePathType,
     Filter: Equatable
 > {
+    public typealias Element = Element
+    public typealias PagePath = PagePath
     public typealias Content = PagedRemoteResourceStateContent<Element, PagePath>
+    public typealias Filter = Filter
 
     internal(set) public var content: Content
     internal(set) public var pendingReload: Bool
