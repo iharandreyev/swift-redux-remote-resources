@@ -45,6 +45,13 @@ public enum PagedFilterableRemoteResourceAction<
         case reload
         case loadNext
         case applyFilter(Filter)
+        
+        fileprivate init(_ resourceViewAction: ResourceAction.ViewAction) {
+            switch resourceViewAction {
+            case .reload: self = .reload
+            case .loadNext: self = .loadNext
+            }
+        }
     }
     
     public typealias ResourceAction = PagedRemoteResourceAction<Element, PagePath>
@@ -143,8 +150,8 @@ public struct PagedFilterableRemoteResource<
         into state: inout State
     ) throws -> Effect<Action> {
         switch action {
-        case .view:
-            throw AnyDebugError("Don't use 'Action.resource.view()'. Use 'Action.view' instead.")
+        case let .view(viewAction):
+            return reduce(into: &state, action: .view(.init(viewAction)))
             
         case let .unexpectedFailure(error):
             return reduce(into: &state, action: .unexpectedFailure(error))
