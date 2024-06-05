@@ -1,6 +1,60 @@
 import ComposableArchitecture
 import RemoteResources
 
+// MARK: - State
+
+@ObservableState
+@dynamicMemberLookup
+public struct PagedFilterableRemoteResourceState<
+    Element: Identifiable,
+    PagePath: PagePathType,
+    Filter: PagedRemoteResourceFilter
+> {
+    public typealias ResourceState = PagedRemoteResource<Element, PagePath>.State
+    public typealias Content = ResourceState.Content
+    
+    fileprivate var resource: ResourceState
+    
+    internal(set) public var filter: Filter
+
+    public init(
+        content: ResourceState.Content = .none,
+        filter: Filter = .empty()
+    ) {
+        self.resource = PagedRemoteResourceState(content: content)
+        self.filter = filter
+    }
+
+    public subscript<T>(dynamicMember keyPath: WritableKeyPath<ResourceState, T>) -> T {
+        get { resource[keyPath: keyPath] }
+        set { resource[keyPath: keyPath] = newValue }
+    }
+}
+
+// MARK: - Action
+
+@CasePathable
+public enum PagedFilterableRemoteResourceAction<
+    Element: Identifiable,
+    PagePath: PagePathType,
+    Filter: PagedRemoteResourceFilter
+> {
+    @CasePathable
+    public enum ViewAction: Equatable {
+        case reload
+        case loadNext
+        case applyFilter(Filter)
+    }
+    
+    public typealias ResourceAction = PagedRemoteResourceAction<Element, PagePath>
+
+    case view(ViewAction)
+    case resource(ResourceAction)
+    case unexpectedFailure(EquatableByDescription<Error>)
+}
+
+// MARK: - Reducer
+
 #warning("TODO: Inject animations for actions")
 public struct PagedFilterableRemoteResource<
     Element: Identifiable,
@@ -12,9 +66,13 @@ public struct PagedFilterableRemoteResource<
     public typealias Environment = PagedFilterableRemoteResourceEnvironment<Element, PagePath, Filter>
     
     private struct CancellationID: Hashable { }
+    private typealias Resource = PagedRemoteResource<Element, PagePath>
     
     @Dependency(Self.Environment.self)
     private var environment
+    
+    // Child reducer is extracted into a property since we need to totally override some actions
+    private let resource = Resource()
     
     public init() { }
     
@@ -24,8 +82,8 @@ public struct PagedFilterableRemoteResource<
             case let .view(action):
                 return try reduceViewAction(action, into: &state)
                 
-            case let .internal(action):
-                return try reduceInternalAction(action, into: &state)
+            case let .resource(action):
+                return try reduceResourceAction(action, into: &state)
                 
             case let .unexpectedFailure(error):
                 runtimeWarn("\(error)")
@@ -79,94 +137,23 @@ public struct PagedFilterableRemoteResource<
         }
     }
     
-    private func reduceInternalAction(
-        _ action: Action.InternalAction,
+    private func reduceResourceAction(
+        _ action: Action.ResourceAction,
         into state: inout State
     ) throws -> Effect<Action> {
         switch action {
-        case let .applyNextPage(page):
-            switch state.content.value {
-            case .none, .loadingFirst, .complete, .failure:
-                state.content = try createPages(withFirstPage: page)
-                state.pendingReload = false
-                
-                return .none
-
-            case let .partial(available, _):
-                if page.path.isFirst() {
-                    state.content = try createPages(withFirstPage: page)
-                } else {
-                    state.content = try extendPages(available, with: page)
-                }
-                
-                state.pendingReload = false
-                
-                return .none
-            }
+        case .view:
+            throw AnyDebugError("Don't use 'Action.resource.view()'. Use 'Action.view' instead.")
             
-        case let .failToLoadNextPage(path, error):
-            switch state.content.value {
-            case .none, .loadingFirst, .failure:
-                state.content = .failure(path, error)
-                state.pendingReload = false
-                
-                return .none
-                
-            case .complete:
-                guard state.pendingReload else {
-                    throw InvalidStateForActionWarning(
-                        Self.self,
-                        action: action,
-                        invalidState: state.content.value,
-                        validStates: "loadingFirst", "partial"
-                    )
-                }
-                
-                state.content = .failure(path, error)
-                state.pendingReload = false
-                
-                return .none
-                
-            case let .partial(available, _):
-                if state.pendingReload {
-                    state.content = .failure(path, error)
-                    state.pendingReload = false
-                    
-                } else {
-                    state.content = .partial(available, next: .failed(path, error))
-                }
-
-                return .none
-            }
-        }
-    }
-    
-    private func createPages(
-        withFirstPage page: Page<Element, PagePath>
-    ) throws -> State.Content {
-        let pages = try Pages(firstPage: page)
-        
-        switch page.path.next() {
-        case .none:
-            return .complete(pages)
+        case let .unexpectedFailure(error):
+            return reduce(into: &state, action: .unexpectedFailure(error))
             
-        case let .some(nextPagePath):
-            return .partial(pages, next: .pending(nextPagePath))
-        }
-    }
-    
-    private func extendPages(
-        _ pages: Pages<Element, PagePath>,
-        with page: Page<Element, PagePath>
-    ) throws -> State.Content {
-        let pages = try pages.appending(page: page)
-        
-        switch page.path.next() {
-        case .none:
-            return .complete(pages)
-            
-        case let .some(nextPagePath):
-            return .partial(pages, next: .pending(nextPagePath))
+        case let .internal(action):
+            return resource.reduce(
+                into: &state.resource,
+                action: .internal(action)
+            )
+            .map(Action.resource)
         }
     }
     
@@ -181,12 +168,15 @@ public struct PagedFilterableRemoteResource<
             priority: .background,
             operation: { sendAction in
                 let page = try await environment.loadPage(path, filter)
-                await sendAction(.internal(.applyNextPage(page)))
+                await sendAction(.resource(.internal(.applyNextPage(page))))
             },
             catch: { error, sendAction in
-                await sendAction(.internal(.failToLoadNextPage(path, .with(error))))
+                await sendAction(.resource(.internal(.failToLoadNextPage(path, .with(error)))))
             }
         )
         .cancellable(id: CancellationID(), cancelInFlight: true)
     }
 }
+
+extension PagedFilterableRemoteResourceState: Equatable where Element: Equatable { }
+extension PagedFilterableRemoteResourceAction: Equatable where Element: Equatable { }

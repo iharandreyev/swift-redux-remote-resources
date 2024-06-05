@@ -15,7 +15,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
             state.content = .loadingFirst
             state.pendingReload = true
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .complete()
             state.pendingReload = false
         }
@@ -33,7 +33,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.reload)) { state in
             state.pendingReload = true
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 1, total: totalPages)
             state.pendingReload = false
         }
@@ -51,7 +51,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.reload)) { state in
             state.pendingReload = true
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 1, total: totalPages)
             state.pendingReload = false
         }
@@ -67,7 +67,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
             state.content = .loadingFirst
             state.pendingReload = true
         }
-        await store.receive(\.internal.failToLoadNextPage) { state in
+        await store.receive(\.resource.internal.failToLoadNextPage) { state in
             state.content = .failure(.first(), .with(error))
             state.pendingReload = false
         }
@@ -86,7 +86,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.reload)) { state in
             state.pendingReload = true
         }
-        await store.receive(\.internal.failToLoadNextPage) { state in
+        await store.receive(\.resource.internal.failToLoadNextPage) { state in
             state.content = .failure(.first(), .with(error))
             state.pendingReload = false
         }
@@ -105,7 +105,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.reload)) { state in
             state.pendingReload = true
         }
-        await store.receive(\.internal.failToLoadNextPage) { state in
+        await store.receive(\.resource.internal.failToLoadNextPage) { state in
             state.content = .failure(.first(), .with(error))
             state.pendingReload = false
         }
@@ -125,7 +125,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.loadNext)) { state in
             state.content = try .partialLoading(count: 2, total: totalPages)
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 3, total: totalPages)
         }
     }
@@ -142,7 +142,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.loadNext)) { state in
             state.content = try .partialLoading(count: totalPages - 1, total: totalPages)
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .complete(total: totalPages)
         }
     }
@@ -160,7 +160,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.loadNext)) { state in
             state.content = try .partialLoading(count: 2, total: totalPages)
         }
-        await store.receive(\.internal.failToLoadNextPage) { state in
+        await store.receive(\.resource.internal.failToLoadNextPage) { state in
             state.content = try .partialFailed(count: 2, total: totalPages, error: error)
         }
     }
@@ -194,7 +194,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
             state.filter = filter
             state.pendingReload = true
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 1, filter: filter, total: totalPages)
             state.pendingReload = false
         }
@@ -228,7 +228,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
             state.filter = filter
             state.pendingReload = true
         }
-        await store.receive(\.internal.failToLoadNextPage) { state in
+        await store.receive(\.resource.internal.failToLoadNextPage) { state in
             state.filter = filter
             state.content = .failure(.first(), .with(error))
             state.pendingReload = false
@@ -252,7 +252,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         
         queue.advance(by: 1)
         
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .complete(Pages(firstPage: .test(offset: 0)))
             state.pendingReload = false
         }
@@ -272,7 +272,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
             state.content = .loadingFirst
             state.pendingReload = true
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 1, total: totalPages)
             state.pendingReload = false
         }
@@ -284,7 +284,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.loadNext)) { state in
             state.content = try .partialLoading(count: 1, total: totalPages)
         }
-        await store.receive(\.internal.failToLoadNextPage) { state in
+        await store.receive(\.resource.internal.failToLoadNextPage) { state in
             state.content = try .partialFailed(count: 1, total: totalPages, error: error)
         }
         
@@ -295,7 +295,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.loadNext)) { state in
             state.content = try .partialLoading(count: 1, total: totalPages)
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 2, total: totalPages)
         }
         
@@ -304,7 +304,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
             state.filter = filter
             state.pendingReload = true
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 1, filter: filter, total: totalPages)
             state.pendingReload = false
         }
@@ -312,7 +312,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
         await store.send(.view(.loadNext)) { state in
             state.content = try .partialLoading(count: 1, filter: filter, total: totalPages)
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 2, filter: filter, total: totalPages)
         }
         
@@ -321,7 +321,7 @@ final class PagedFilterableRemoteResourceTests: XCTestCase {
             state.filter = .empty()
             state.pendingReload = true
         }
-        await store.receive(\.internal.applyNextPage) { state in
+        await store.receive(\.resource.internal.applyNextPage) { state in
             state.content = try .partialPending(count: 1, total: totalPages)
             state.pendingReload = false
         }
