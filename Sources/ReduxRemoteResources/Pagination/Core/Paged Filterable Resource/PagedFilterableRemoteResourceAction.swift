@@ -2,23 +2,23 @@ import ComposableArchitecture
 import RemoteResources
 
 @CasePathable
-public enum PagedRemoteResourceAction<
+public enum PagedFilterableRemoteResourceAction<
     Element: Identifiable,
     PagePath: PagePathType,
     Filter: PagedRemoteResourceFilter
 > {
-    public typealias ViewAction = PagedRemoteResourceAction_View<Filter>
-    public typealias InternalAction = PagedRemoteResourceAction_Internal<Element, PagePath>
+    public typealias ViewAction = PagedFilterableRemoteResourceAction_View<Filter>
+    public typealias InternalAction = PagedFilterableRemoteResourceAction_Internal<Element, PagePath>
     
     case view(ViewAction)
     case `internal`(InternalAction)
     case unexpectedFailure(EquatableByDescription<Error>)
 }
 
-extension PagedRemoteResourceAction: Equatable where Element: Equatable { }
+extension PagedFilterableRemoteResourceAction: Equatable where Element: Equatable { }
 
 @CasePathable
-public enum PagedRemoteResourceAction_View<
+public enum PagedFilterableRemoteResourceAction_View<
     Filter: PagedRemoteResourceFilter
 > {
     case reload
@@ -26,10 +26,10 @@ public enum PagedRemoteResourceAction_View<
     case applyFilter(Filter)
 }
 
-extension PagedRemoteResourceAction_View: Equatable where Filter: Equatable { }
+extension PagedFilterableRemoteResourceAction_View: Equatable where Filter: Equatable { }
 
 @CasePathable
-public enum PagedRemoteResourceAction_Internal<
+public enum PagedFilterableRemoteResourceAction_Internal<
     Element: Identifiable,
     PagePath: PagePathType
 > {
@@ -37,9 +37,9 @@ public enum PagedRemoteResourceAction_Internal<
     case failToLoadNextPage(PagePath, EquatableByDescription<Error>)
 }
 
-extension PagedRemoteResourceAction_Internal: Equatable where Element: Equatable { }
+extension PagedFilterableRemoteResourceAction_Internal: Equatable where Element: Equatable { }
 
-extension PagedRemoteResourceAction: CustomShortStringConvertible {
+extension PagedFilterableRemoteResourceAction: CustomShortStringConvertible {
     public var shortDescription: String {
         switch self {
         case let .view(action): return "view(\(action.shortDescription))"
@@ -50,7 +50,7 @@ extension PagedRemoteResourceAction: CustomShortStringConvertible {
 }
 
 #warning("TODO: Rework with a macro")
-extension PagedRemoteResourceAction_View: CustomShortStringConvertible {
+extension PagedFilterableRemoteResourceAction_View: CustomShortStringConvertible {
     public var shortDescription: String {
         switch self {
         case .reload: return "reload"
@@ -61,7 +61,7 @@ extension PagedRemoteResourceAction_View: CustomShortStringConvertible {
 }
 
 #warning("TODO: Rework with a macro")
-extension PagedRemoteResourceAction_Internal: CustomShortStringConvertible {
+extension PagedFilterableRemoteResourceAction_Internal: CustomShortStringConvertible {
     public var shortDescription: String {
         switch self {
         case .applyNextPage: return "applyNextPage"

@@ -1,14 +1,15 @@
 import ComposableArchitecture
 import RemoteResources
 
-public struct PagedRemoteResource<
+#warning("TODO: Inject animations for actions")
+public struct PagedFilterableRemoteResource<
     Element: Identifiable,
     PagePath: PagePathType,
     Filter: PagedRemoteResourceFilter
 >: Reducer {
-    public typealias State = PagedRemoteResourceState<Element, PagePath, Filter>
-    public typealias Action = PagedRemoteResourceAction<Element, PagePath, Filter>
-    public typealias Environment = PagedRemoteResourceEnvironment<Element, PagePath, Filter>
+    public typealias State = PagedFilterableRemoteResourceState<Element, PagePath, Filter>
+    public typealias Action = PagedFilterableRemoteResourceAction<Element, PagePath, Filter>
+    public typealias Environment = PagedFilterableRemoteResourceEnvironment<Element, PagePath, Filter>
     
     private struct CancellationID: Hashable { }
     
@@ -33,6 +34,7 @@ public struct PagedRemoteResource<
         } catch: { error in
             Action.unexpectedFailure(.with(error))
         }
+        ._printChanges()
     }
     
     private func reduceViewAction(

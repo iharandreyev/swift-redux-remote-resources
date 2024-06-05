@@ -3,7 +3,7 @@ import ComposableArchitecture
 import RemoteResources
 import XCTest
 
-final class PagedRemoteResourceTests: XCTestCase {
+final class PagedFilterableRemoteResourceTests: XCTestCase {
     // MARK: - Reload
     
     @MainActor
@@ -330,7 +330,7 @@ final class PagedRemoteResourceTests: XCTestCase {
 
 // MARK: - Helpers
 
-private typealias SUT = PagedRemoteResource<TestElement, TestPagePath, String>
+private typealias SUT = PagedFilterableRemoteResource<TestElement, TestPagePath, String>
 
 private extension TestStoreOf<SUT> {
     @inline(__always)

@@ -2,14 +2,14 @@ import ComposableArchitecture
 import RemoteResources
 
 @ObservableState
-public struct PagedRemoteResourceState<
+public struct PagedFilterableRemoteResourceState<
     Element: Identifiable,
     PagePath: PagePathType,
     Filter: PagedRemoteResourceFilter
 > {
     public typealias Element = Element
     public typealias PagePath = PagePath
-    public typealias Content = PagedRemoteResourceStateContent<Element, PagePath>
+    public typealias Content = PagedFilterableRemoteResourceStateContent<Element, PagePath>
     public typealias Filter = Filter
 
     internal(set) public var content: Content
@@ -40,10 +40,10 @@ extension PagedContentState: CustomShortStringConvertible {
     }
 }
 
-extension PagedRemoteResourceState: Equatable where Element: Equatable { }
+extension PagedFilterableRemoteResourceState: Equatable where Element: Equatable { }
 
 @ObservableState
-public struct PagedRemoteResourceStateContent<
+public struct PagedFilterableRemoteResourceStateContent<
     Element: Identifiable,
     PagePath: PagePathType
 >: PagedContentStateWrapper {
@@ -54,7 +54,7 @@ public struct PagedRemoteResourceStateContent<
     }
 }
 
-extension PagedRemoteResourceStateContent {
+extension PagedFilterableRemoteResourceStateContent {
     var canAppendNext: Bool {
         switch value {
         case .none, .loadingFirst, .partial: return true
@@ -63,4 +63,4 @@ extension PagedRemoteResourceStateContent {
     }
 }
 
-extension PagedRemoteResourceStateContent: Equatable where Element: Equatable { }
+extension PagedFilterableRemoteResourceStateContent: Equatable where Element: Equatable { }

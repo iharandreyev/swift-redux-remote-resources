@@ -1,7 +1,7 @@
 import ReduxRemoteResources
 import RemoteResources
 
-extension PagedRemoteResourceState where Element == TestElement, PagePath == TestPagePath {
+extension PagedFilterableRemoteResourceState where Element == TestElement, PagePath == TestPagePath {
     @inline(__always)
     init(
         pages: [Page<TestElement, TestPagePath>],

@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import RemoteResources
 
-public struct PagedRemoteResourceEnvironment<
+public struct PagedFilterableRemoteResourceEnvironment<
     Element: Identifiable,
     PagePath: PagePathType,
     Filter
@@ -24,7 +24,7 @@ public struct PagedRemoteResourceEnvironment<
     }
 }
 
-extension PagedRemoteResourceEnvironment: DependencyKey {
+extension PagedFilterableRemoteResourceEnvironment: DependencyKey {
     public static var liveValue: Self {
         Self()
     }
