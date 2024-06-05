@@ -40,9 +40,6 @@ struct PagedRemoteResourceView_Preview_iOS: View {
                         placeholderView: {
                             Color(.cyan).frame(height: 24)
                         },
-                        loadingFirstView: {
-                            Color(.blue).frame(height: 24)
-                        },
                         elementView: { element in
                             Text(element.value)
                         },

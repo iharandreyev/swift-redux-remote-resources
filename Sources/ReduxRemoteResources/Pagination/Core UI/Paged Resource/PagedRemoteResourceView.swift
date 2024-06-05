@@ -8,7 +8,6 @@ public struct PagedRemoteResourceView<
     PagePath: PagePathType,
     Filter: PagedRemoteResourceFilter,
     PlaceholderView: View,
-    LoadingFirstView: View,
     PageView: View,
     PageLoadingIndicatorView: View,
     FailureView: View
@@ -18,7 +17,6 @@ public struct PagedRemoteResourceView<
     
     let store: Store<ViewState, ViewAction>
     let placeholderView: () -> PlaceholderView
-    let loadingFirstView: () -> LoadingFirstView
     let elementView: (_ content: Element) -> PageView
     let pageLoadingIndicatorView: () -> PageLoadingIndicatorView
     let failureView: (Error) -> FailureView
@@ -26,14 +24,12 @@ public struct PagedRemoteResourceView<
     public init(
         store: Store<ViewState, ViewAction>,
         placeholderView: @escaping () -> PlaceholderView,
-        loadingFirstView: @escaping () -> LoadingFirstView,
         elementView: @escaping (_ content: Element) -> PageView,
         pageLoadingIndicatorView: @escaping () -> PageLoadingIndicatorView,
         failureView: @escaping (Error) -> FailureView
     ) {
         self.store = store
         self.placeholderView = placeholderView
-        self.loadingFirstView = loadingFirstView
         self.elementView = elementView
         self.pageLoadingIndicatorView = pageLoadingIndicatorView
         self.failureView = failureView
@@ -42,19 +38,13 @@ public struct PagedRemoteResourceView<
     public var body: some View {
         WithPerceptionTracking {
             switch store.state.value {
-            case PagedContentState<Element, PagePath>.none:
+            case .none, .loadingFirst:
                 placeholderView()
                 
-            case PagedContentState<Element, PagePath>.loadingFirst:
-                loadingFirstView()
-                
-            case let PagedContentState<Element, PagePath>.partial(available, _):
+            case let .partial(available, _), let .complete(available):
                 availableContent(available)
 
-            case let PagedContentState<Element, PagePath>.complete(pages):
-                availableContent(pages)
-                
-            case let PagedContentState<Element, PagePath>.failure(_, error):
+            case let .failure(_, error):
                 failureView(error.wrappedValue)
             }
             
