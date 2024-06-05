@@ -43,11 +43,11 @@ struct PagedRemoteResourceView_Preview_iOS: View {
                         elementView: { element in
                             Text(element.value)
                         },
-                        pageLoadingIndicatorView: {
-                            SwiftUI.ProgressView()
-                        },
                         failureView: { error in
-                            Color(.red).frame(height: 48)
+                            Text("\(error)").background(Color.red)
+                        },
+                        nextPageLoadingFailureView: { error in
+                            Text("\(error)").foregroundColor(.red)
                         }
                     )
                 }

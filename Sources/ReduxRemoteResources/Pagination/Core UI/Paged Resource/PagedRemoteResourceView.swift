@@ -9,30 +9,35 @@ public struct PagedRemoteResourceView<
     Filter: PagedRemoteResourceFilter,
     PlaceholderView: View,
     PageView: View,
-    PageLoadingIndicatorView: View,
-    FailureView: View
+    FailureView: View,
+    NextPageLoadingIndicatorView: View,
+    NextPageLoadingFailureView: View
 >: View {
     public typealias ViewState = PagedRemoteResourceState<Element, PagePath, Filter>.Content
     public typealias ViewAction = PagedRemoteResourceAction<Element, PagePath, Filter>.ViewAction
+
+    private let placeholderView: () -> PlaceholderView
+    private let elementView: (_ content: Element) -> PageView
+    private let failureView: (Error) -> FailureView
+    private let nextPageLoadingIndicatorView: () -> NextPageLoadingIndicatorView
+    private let nextPageLoadingFailureView: (Error) -> NextPageLoadingFailureView
     
-    let store: Store<ViewState, ViewAction>
-    let placeholderView: () -> PlaceholderView
-    let elementView: (_ content: Element) -> PageView
-    let pageLoadingIndicatorView: () -> PageLoadingIndicatorView
-    let failureView: (Error) -> FailureView
+    private let store: Store<ViewState, ViewAction>
     
     public init(
         store: Store<ViewState, ViewAction>,
         placeholderView: @escaping () -> PlaceholderView,
         elementView: @escaping (_ content: Element) -> PageView,
-        pageLoadingIndicatorView: @escaping () -> PageLoadingIndicatorView,
-        failureView: @escaping (Error) -> FailureView
+        failureView: @escaping (Error) -> FailureView,
+        nextPageLoadingIndicatorView: @escaping () -> NextPageLoadingIndicatorView,
+        nextPageLoadingFailureView: @escaping (Error) -> NextPageLoadingFailureView
     ) {
         self.store = store
         self.placeholderView = placeholderView
         self.elementView = elementView
-        self.pageLoadingIndicatorView = pageLoadingIndicatorView
         self.failureView = failureView
+        self.nextPageLoadingIndicatorView = nextPageLoadingIndicatorView
+        self.nextPageLoadingFailureView = nextPageLoadingFailureView
     }
                         
     public var body: some View {
@@ -69,12 +74,35 @@ public struct PagedRemoteResourceView<
             onLoadNext: {
                 store.send(.loadNext, animation: .smooth)
             },
-            loadingView: {
-                Color(.black).frame(width: 24, height: 24, alignment: .center)
+            loadingView: nextPageLoadingIndicatorView,
+            failureView: nextPageLoadingFailureView
+        )
+    }
+}
+
+@available(iOS 14.0, *)
+@available(macOS 14.0, *)
+@available(catalyst 14.0, *)
+@available(tvOS 14.0, *)
+@available(watchOS 7.0, *)
+@available(visionOS 1.0, *)
+extension PagedRemoteResourceView where NextPageLoadingIndicatorView == ProgressView<SwiftUI.EmptyView, SwiftUI.EmptyView> {
+    public init(
+        store: Store<ViewState, ViewAction>,
+        placeholderView: @escaping () -> PlaceholderView,
+        elementView: @escaping (_ content: Element) -> PageView,
+        failureView: @escaping (Error) -> FailureView,
+        nextPageLoadingFailureView: @escaping (Error) -> NextPageLoadingFailureView
+    ) {
+        self.init(
+            store: store,
+            placeholderView: placeholderView,
+            elementView: elementView,
+            failureView: failureView,
+            nextPageLoadingIndicatorView: {
+                NextPageLoadingIndicatorView()
             },
-            failureView: { error in
-                Text("\(error)").foregroundColor(.red)
-            }
+            nextPageLoadingFailureView: nextPageLoadingFailureView
         )
     }
 }
