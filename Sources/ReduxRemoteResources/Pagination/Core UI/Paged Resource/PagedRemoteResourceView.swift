@@ -3,6 +3,7 @@ import Foundation
 import RemoteResources
 import SwiftUI
 
+#warning("TODO: - Cover with tests")
 public struct PagedRemoteResourceView<
     Element: Identifiable & Equatable,
     PagePath: PagePathType,
