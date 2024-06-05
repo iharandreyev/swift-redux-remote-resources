@@ -48,30 +48,34 @@ public struct PagedRemoteResourceView<
             case PagedContentState<Element, PagePath>.loadingFirst:
                 loadingFirstView()
                 
-            case let PagedContentState<Element, PagePath>.partial(available, next):
-                partialContent(available, next: next.eraseToAnyNextPageState())
-                
+            case let PagedContentState<Element, PagePath>.partial(available, _):
+                availableContent(available)
+
             case let PagedContentState<Element, PagePath>.complete(pages):
                 availableContent(pages)
                 
             case let PagedContentState<Element, PagePath>.failure(_, error):
                 failureView(error.wrappedValue)
             }
+            
+            pageLoadingIndicator()
         }
         .onAppear {
             store.send(.reload, animation: .smooth)
         }
     }
-
-    @ViewBuilder
-    private func partialContent(
-        _ available: Pages<Element, PagePath>,
-        next: AnyNextPageState
-    ) -> some View {
-        availableContent(available)
-        
+    
+    private func availableContent(_ pages: Pages<Element, PagePath>) -> some View {
+        ForEach(pages.contents) { page in
+            ForEach(page.value) { element in
+                elementView(element)
+            }
+        }
+    }
+    
+    private func pageLoadingIndicator() -> some View {
         PageLoadingIndicator(
-            nextPage: next,
+            nextPage: Binding.readOnly(store.value[case: \.partial]?.next.eraseToAnyNextPageState()),
             onLoadNext: {
                 store.send(.loadNext, animation: .smooth)
             },
@@ -82,13 +86,5 @@ public struct PagedRemoteResourceView<
                 Text("\(error)").foregroundColor(.red)
             }
         )
-    }
-    
-    private func availableContent(_ pages: Pages<Element, PagePath>) -> some View {
-        ForEach(pages.contents) { page in
-            ForEach(page.value) { element in
-                elementView(element)
-            }
-        }
     }
 }

@@ -2,18 +2,19 @@ import RemoteResources
 import SwiftUI
 
 public struct PageLoadingIndicator<LoadingView: View, FailureView: View>: View {
-    private let nextPage: AnyNextPageState
+    @Binding
+    private var nextPage: AnyNextPageState?
     private let onLoadNext: () -> Void
     private let loadingView: () -> LoadingView
     private let failureView: (Error) -> FailureView
     
     public init(
-        nextPage: AnyNextPageState,
+        nextPage: Binding<AnyNextPageState?>,
         onLoadNext: @escaping () -> Void,
         loadingView: @escaping () -> LoadingView,
         failureView: @escaping (Error) -> FailureView
     ) {
-        self.nextPage = nextPage
+        _nextPage = nextPage
         self.onLoadNext = onLoadNext
         self.loadingView = loadingView
         self.failureView = failureView
@@ -22,13 +23,13 @@ public struct PageLoadingIndicator<LoadingView: View, FailureView: View>: View {
     public var body: some View {
         switch nextPage {
         case .pending:
-            EmptyView().onAppear {
-                onLoadNext()
-            }
+            EmptyView().onAppear(perform: onLoadNext)
         case .loading:
             loadingView()
         case let .failed(error):
-            failureView(error.wrappedValue)
+            failureView(error.wrappedValue).onAppearSkippingFirst(perform: onLoadNext)
+        case .none:
+            SwiftUI.EmptyView()
         }
     }
 }
