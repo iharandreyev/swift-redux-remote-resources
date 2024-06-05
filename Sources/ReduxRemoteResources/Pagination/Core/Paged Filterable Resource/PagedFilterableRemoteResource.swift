@@ -10,8 +10,9 @@ public struct PagedFilterableRemoteResourceState<
     PagePath: PagePathType,
     Filter: PagedRemoteResourceFilter
 > {
-    public typealias ResourceState = PagedRemoteResource<Element, PagePath>.State
+    public typealias ResourceState = PagedRemoteResourceState<Element, PagePath>
     public typealias Content = ResourceState.Content
+    public typealias ObservableContent = ResourceState.ObservableContent
     
     fileprivate var resource: ResourceState
     
@@ -101,7 +102,7 @@ public struct PagedFilterableRemoteResource<
     ) throws -> Effect<Action> {
         switch action {
         case .reload:
-            switch state.content.value {
+            switch state.content {
             case .none, .loadingFirst, .failure:
                 state.content = .loadingFirst
             case .partial, .complete:
@@ -114,11 +115,11 @@ public struct PagedFilterableRemoteResource<
             return try reload(with: state.filter)
             
         case .loadNext:
-            guard case let .partial(available, next) = state.content.value else {
+            guard case let .partial(available, next) = state.content else {
                 throw InvalidStateForActionWarning(
                     Self.self,
                     action: action,
-                    invalidState: state.content.value,
+                    invalidState: state.content,
                     validStates: "partial"
                 )
             }

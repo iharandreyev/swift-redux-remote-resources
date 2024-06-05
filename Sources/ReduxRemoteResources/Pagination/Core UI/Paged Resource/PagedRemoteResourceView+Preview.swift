@@ -36,7 +36,7 @@ struct PagedRemoteResourceView_Preview_iOS: View {
                     )
                     
                     PagedRemoteResourceView(
-                        store: store.scope(state: \.content, action: \.view),
+                        store: store.scope(state: \.__content, action: \.view),
                         placeholderView: {
                             Color(.cyan).frame(height: 24)
                         },

@@ -14,7 +14,7 @@ public struct PagedRemoteResourceView<
     NextPageLoadingIndicatorView: View,
     NextPageLoadingFailureView: View
 >: View {
-    public typealias ViewState = PagedFilterableRemoteResourceState<Element, PagePath, Filter>.Content
+    public typealias ViewState = PagedFilterableRemoteResourceState<Element, PagePath, Filter>.ObservableContent
     public typealias ViewAction = PagedFilterableRemoteResourceAction<Element, PagePath, Filter>.ViewAction
 
     private let placeholderView: () -> PlaceholderView
@@ -47,7 +47,7 @@ public struct PagedRemoteResourceView<
         }
         
         WithPerceptionTracking {
-            switch store.state.value {
+            switch store.wrappedValue {
             case .none, .loadingFirst:
                 placeholderView()
                 
@@ -75,7 +75,7 @@ public struct PagedRemoteResourceView<
     
     private func pageLoadingIndicator() -> some View {
         PageLoadingIndicator(
-            nextPage: Binding.readOnly(store.value[case: \.partial]?.next.eraseToAnyNextPageState()),
+            nextPage: Binding.readOnly(store.wrappedValue[case: \.partial]?.next.eraseToAnyNextPageState()),
             onLoadNext: {
                 store.send(.loadNext, animation: .smooth)
             },
@@ -87,7 +87,7 @@ public struct PagedRemoteResourceView<
 
 @available(iOS 14.0, *)
 @available(macOS 14.0, *)
-@available(catalyst 14.0, *)
+@available(macCatalyst 14.0, *)
 @available(tvOS 14.0, *)
 @available(watchOS 7.0, *)
 @available(visionOS 1.0, *)

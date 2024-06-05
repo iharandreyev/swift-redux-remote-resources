@@ -1,6 +1,63 @@
 import ComposableArchitecture
 import RemoteResources
 
+// MARK: - State
+
+@ObservableState
+public struct PagedRemoteResourceState<
+    Element: Identifiable,
+    PagePath: PagePathType
+> {
+    public typealias Content = PagedContentState<Element, PagePath>
+    public typealias ObservableContent = ObservableContainer<Content>
+
+    public var content: Content {
+        get { __content.wrappedValue }
+        set { __content.wrappedValue = newValue }
+    }
+    internal(set) public var __content: ObservableContent
+    
+    internal(set) public var pendingReload: Bool = false
+
+    public init(
+        content: Content = .none
+    ) {
+        __content = ObservableContent(content)
+    }
+}
+
+// MARK: - Action
+
+@CasePathable
+public enum PagedRemoteResourceAction<
+    Element: Identifiable,
+    PagePath: PagePathType
+> {
+    public typealias ViewAction = PagedRemoteResourceAction_View
+    public typealias InternalAction = PagedRemoteResourceAction_Internal<Element, PagePath>
+    
+    case view(ViewAction)
+    case `internal`(InternalAction)
+    case unexpectedFailure(EquatableByDescription<Error>)
+}
+
+@CasePathable
+public enum PagedRemoteResourceAction_View: Equatable {
+    case reload
+    case loadNext
+}
+
+@CasePathable
+public enum PagedRemoteResourceAction_Internal<
+    Element: Identifiable,
+    PagePath: PagePathType
+> {
+    case applyNextPage(Page<Element, PagePath>)
+    case failToLoadNextPage(PagePath, EquatableByDescription<Error>)
+}
+
+// MARK: - Reducer
+
 #warning("TODO: Inject animations for actions")
 public struct PagedRemoteResource<
     Element: Identifiable,
@@ -42,7 +99,7 @@ public struct PagedRemoteResource<
     ) throws -> Effect<Action> {
         switch action {
         case .reload:
-            switch state.content.value {
+            switch state.content {
             case .none, .loadingFirst, .failure:
                 state.content = .loadingFirst
             case .partial, .complete:
@@ -55,11 +112,11 @@ public struct PagedRemoteResource<
             return try reload()
             
         case .loadNext:
-            guard case let .partial(available, next) = state.content.value else {
+            guard case let .partial(available, next) = state.content else {
                 throw InvalidStateForActionWarning(
                     Self.self,
                     action: action,
-                    invalidState: state.content.value,
+                    invalidState: state.content,
                     validStates: "partial"
                 )
             }
@@ -76,7 +133,7 @@ public struct PagedRemoteResource<
     ) throws -> Effect<Action> {
         switch action {
         case let .applyNextPage(page):
-            switch state.content.value {
+            switch state.content {
             case .none, .loadingFirst, .complete, .failure:
                 state.content = try createPages(withFirstPage: page)
                 state.pendingReload = false
@@ -96,7 +153,7 @@ public struct PagedRemoteResource<
             }
             
         case let .failToLoadNextPage(path, error):
-            switch state.content.value {
+            switch state.content {
             case .none, .loadingFirst, .failure:
                 state.content = .failure(path, error)
                 state.pendingReload = false
@@ -108,7 +165,7 @@ public struct PagedRemoteResource<
                     throw InvalidStateForActionWarning(
                         Self.self,
                         action: action,
-                        invalidState: state.content.value,
+                        invalidState: state.content,
                         validStates: "loadingFirst", "partial"
                     )
                 }
@@ -181,3 +238,7 @@ public struct PagedRemoteResource<
         .cancellable(id: CancellationID(), cancelInFlight: true)
     }
 }
+
+extension PagedRemoteResourceState: Equatable where Element: Equatable { }
+extension PagedRemoteResourceAction: Equatable where Element: Equatable { }
+extension PagedRemoteResourceAction_Internal: Equatable where Element: Equatable { }

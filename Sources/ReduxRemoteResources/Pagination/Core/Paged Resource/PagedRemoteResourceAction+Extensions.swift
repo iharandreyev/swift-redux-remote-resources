@@ -1,37 +1,4 @@
-import ComposableArchitecture
 import RemoteResources
-
-@CasePathable
-public enum PagedRemoteResourceAction<
-    Element: Identifiable,
-    PagePath: PagePathType
-> {
-    public typealias ViewAction = PagedRemoteResourceAction_View
-    public typealias InternalAction = PagedRemoteResourceAction_Internal<Element, PagePath>
-    
-    case view(ViewAction)
-    case `internal`(InternalAction)
-    case unexpectedFailure(EquatableByDescription<Error>)
-}
-
-extension PagedRemoteResourceAction: Equatable where Element: Equatable { }
-
-@CasePathable
-public enum PagedRemoteResourceAction_View: Equatable {
-    case reload
-    case loadNext
-}
-
-@CasePathable
-public enum PagedRemoteResourceAction_Internal<
-    Element: Identifiable,
-    PagePath: PagePathType
-> {
-    case applyNextPage(Page<Element, PagePath>)
-    case failToLoadNextPage(PagePath, EquatableByDescription<Error>)
-}
-
-extension PagedRemoteResourceAction_Internal: Equatable where Element: Equatable { }
 
 extension PagedRemoteResourceAction: CustomShortStringConvertible {
     public var shortDescription: String {
