@@ -7,15 +7,14 @@ import SwiftUI
 public struct PagedRemoteResourceView<
     Element: Identifiable & Equatable,
     PagePath: PagePathType,
-    Filter: PagedRemoteResourceFilter,
     PlaceholderView: View,
     PageView: View,
     FailureView: View,
     NextPageLoadingIndicatorView: View,
     NextPageLoadingFailureView: View
 >: View {
-    public typealias ViewState = PagedFilterableRemoteResourceState<Element, PagePath, Filter>.ObservableContent
-    public typealias ViewAction = PagedFilterableRemoteResourceAction<Element, PagePath, Filter>.ViewAction
+    public typealias ViewState = PagedRemoteResourceState<Element, PagePath>.ObservableContent
+    public typealias ViewAction = PagedRemoteResourceAction<Element, PagePath>.ViewAction
 
     private let placeholderView: () -> PlaceholderView
     private let elementView: (_ content: Element) -> PageView
@@ -92,6 +91,7 @@ public struct PagedRemoteResourceView<
 @available(watchOS 7.0, *)
 @available(visionOS 1.0, *)
 extension PagedRemoteResourceView where NextPageLoadingIndicatorView == ProgressView<SwiftUI.EmptyView, SwiftUI.EmptyView> {
+    @inlinable
     public init(
         store: Store<ViewState, ViewAction>,
         placeholderView: @escaping () -> PlaceholderView,
@@ -107,6 +107,86 @@ extension PagedRemoteResourceView where NextPageLoadingIndicatorView == Progress
             nextPageLoadingIndicatorView: {
                 NextPageLoadingIndicatorView()
             },
+            nextPageLoadingFailureView: nextPageLoadingFailureView
+        )
+    }
+    
+    @inlinable
+    public init(
+        store: StoreOf<PagedRemoteResource<Element, PagePath>>,
+        placeholderView: @escaping () -> PlaceholderView,
+        elementView: @escaping (_ content: Element) -> PageView,
+        failureView: @escaping (Error) -> FailureView,
+        nextPageLoadingFailureView: @escaping (Error) -> NextPageLoadingFailureView
+    ) {
+        self.init(
+            store: store.scope(state: \.__content, action: \.view),
+            placeholderView: placeholderView,
+            elementView: elementView,
+            failureView: failureView,
+            nextPageLoadingIndicatorView: {
+                NextPageLoadingIndicatorView()
+            },
+            nextPageLoadingFailureView: nextPageLoadingFailureView
+        )
+    }
+    
+    @inlinable
+    public init<Filter: PagedRemoteResourceFilter>(
+        store: StoreOf<PagedFilterableRemoteResource<Element, PagePath, Filter>>,
+        placeholderView: @escaping () -> PlaceholderView,
+        elementView: @escaping (_ content: Element) -> PageView,
+        failureView: @escaping (Error) -> FailureView,
+        nextPageLoadingFailureView: @escaping (Error) -> NextPageLoadingFailureView
+    ) {
+        self.init(
+            store: store.scope(state: \.__content, action: \.resource.view),
+            placeholderView: placeholderView,
+            elementView: elementView,
+            failureView: failureView,
+            nextPageLoadingIndicatorView: {
+                NextPageLoadingIndicatorView()
+            },
+            nextPageLoadingFailureView: nextPageLoadingFailureView
+        )
+    }
+}
+
+extension PagedRemoteResourceView {
+    @inlinable
+    public init(
+        store: StoreOf<PagedRemoteResource<Element, PagePath>>,
+        placeholderView: @escaping () -> PlaceholderView,
+        elementView: @escaping (_ content: Element) -> PageView,
+        failureView: @escaping (Error) -> FailureView,
+        nextPageLoadingIndicatorView: @escaping () -> NextPageLoadingIndicatorView,
+        nextPageLoadingFailureView: @escaping (Error) -> NextPageLoadingFailureView
+    ) {
+        self.init(
+            store: store.scope(state: \.__content, action: \.view),
+            placeholderView: placeholderView,
+            elementView: elementView,
+            failureView: failureView,
+            nextPageLoadingIndicatorView: nextPageLoadingIndicatorView,
+            nextPageLoadingFailureView: nextPageLoadingFailureView
+        )
+    }
+    
+    @inlinable
+    public init<Filter: PagedRemoteResourceFilter>(
+        store: StoreOf<PagedFilterableRemoteResource<Element, PagePath, Filter>>,
+        placeholderView: @escaping () -> PlaceholderView,
+        elementView: @escaping (_ content: Element) -> PageView,
+        failureView: @escaping (Error) -> FailureView,
+        nextPageLoadingIndicatorView: @escaping () -> NextPageLoadingIndicatorView,
+        nextPageLoadingFailureView: @escaping (Error) -> NextPageLoadingFailureView
+    ) {
+        self.init(
+            store: store.scope(state: \.__content, action: \.resource.view),
+            placeholderView: placeholderView,
+            elementView: elementView,
+            failureView: failureView,
+            nextPageLoadingIndicatorView: nextPageLoadingIndicatorView,
             nextPageLoadingFailureView: nextPageLoadingFailureView
         )
     }

@@ -8,5 +8,5 @@ extension Paged.UsingPageIndex {
     
     public typealias RemoteResource<
         Element: Identifiable
-    > = PagedFilterableRemoteResource<Element, PagePath, EmptyPagedRemoteResourceFilter>
+    > = PagedRemoteResource<Element, PagePath>
 }
