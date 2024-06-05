@@ -54,13 +54,4 @@ public struct PagedRemoteResourceStateContent<
     }
 }
 
-extension PagedFilterableRemoteResourceStateContent {
-    var canAppendNext: Bool {
-        switch value {
-        case .none, .loadingFirst, .partial: return true
-        case .complete, .failure: return false
-        }
-    }
-}
-
 extension PagedRemoteResourceStateContent: Equatable where Element: Equatable { }
