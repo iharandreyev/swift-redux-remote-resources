@@ -1,7 +1,7 @@
 import ReduxRemoteResources
 import RemoteResources
 
-extension PagedFilterableRemoteResourceStateContent where Element == TestElement, PagePath == TestPagePath {
+extension PagedRemoteResourceStateContent where Element == TestElement, PagePath == TestPagePath {
     @inline(__always)
     static func partialPending(
         count: UInt,

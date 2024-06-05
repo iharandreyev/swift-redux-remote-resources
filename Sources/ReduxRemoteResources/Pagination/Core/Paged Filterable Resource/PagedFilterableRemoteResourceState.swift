@@ -9,7 +9,7 @@ public struct PagedFilterableRemoteResourceState<
 > {
     public typealias Element = Element
     public typealias PagePath = PagePath
-    public typealias Content = PagedFilterableRemoteResourceStateContent<Element, PagePath>
+    public typealias Content = PagedRemoteResourceStateContent<Element, PagePath>
     public typealias Filter = Filter
 
     internal(set) public var content: Content
@@ -43,7 +43,7 @@ extension PagedContentState: CustomShortStringConvertible {
 extension PagedFilterableRemoteResourceState: Equatable where Element: Equatable { }
 
 @ObservableState
-public struct PagedFilterableRemoteResourceStateContent<
+public struct PagedRemoteResourceStateContent<
     Element: Identifiable,
     PagePath: PagePathType
 >: PagedContentStateWrapper {
@@ -63,4 +63,4 @@ extension PagedFilterableRemoteResourceStateContent {
     }
 }
 
-extension PagedFilterableRemoteResourceStateContent: Equatable where Element: Equatable { }
+extension PagedRemoteResourceStateContent: Equatable where Element: Equatable { }
