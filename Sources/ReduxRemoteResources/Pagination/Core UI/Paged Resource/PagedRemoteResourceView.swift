@@ -4,6 +4,7 @@ import RemoteResources
 import SwiftUI
 
 #warning("TODO: - Cover with tests")
+@available(iOS 14.0, *)
 public struct PagedRemoteResourceView<
     Element: Identifiable & Equatable,
     PagePath: PagePathType,
@@ -66,9 +67,13 @@ public struct PagedRemoteResourceView<
     
     private func availableContent(_ pages: Pages<Element, PagePath>) -> some View {
         ForEach(pages.contents) { page in
-            ForEach(page.value) { element in
-                elementView(element)
+            AnimatedTransitionContainer {
+                SectionView(content: page.value, elementView: elementView).id(page.id)
             }
+            .background(Color.yellow)
+            //            .tag(pages.contents.id)
+//            .transition(.scale)
+//            SectionView(content: page.value, elementView: elementView).tag(page.id)
         }
     }
     
@@ -81,6 +86,88 @@ public struct PagedRemoteResourceView<
             loadingView: nextPageLoadingIndicatorView,
             failureView: nextPageLoadingFailureView
         )
+    }
+}
+
+struct SectionView<Element: Identifiable, ElementView: View>: View {
+    let content: IdentifiedArray<Element.ID, Element>
+    let elementView: (Element) -> ElementView
+
+    var body: some View {
+        ForEach(content) { element in
+            elementView(element).tag(element.id).transition(.scale)
+        }
+    }
+}
+
+public struct AnimatedTransition {
+    public let animation: Animation?
+    public let transition: AnyTransition
+}
+
+extension AnimatedTransition {
+    public init(animation: Animation, transition: AnyTransition) {
+        self.animation = animation
+        self.transition = transition
+    }
+    
+    public static func none() -> Self {
+        .init(animation: nil, transition: .identity)
+    }
+    
+    public static func opacity() -> Self {
+        .init(animation: .smooth, transition: .opacity)
+    }
+}
+
+@available(iOS 14.0, *)
+public struct AnimatedTransitionContainer<Content: View>: View {
+    private enum ViewState: String, Equatable {
+        case initial
+        case content
+    }
+    
+    @State
+    private var state: ViewState = .initial
+    
+    private let transition: AnimatedTransition
+    private let content: () -> Content
+    
+    public init(
+        transition: AnimatedTransition = .opacity(),
+        content: @escaping () -> Content
+    ) {
+        self.transition = transition
+        self.content = content
+    }
+    
+    let id = UUID().uuidString
+    
+    @Namespace private var animation
+
+    public var body: some View {
+        Group {
+            switch state {
+            case .initial:
+                Color(.brown).onAppear {
+                    DispatchQueue.main.asyncAfter(delay: 1) {
+                        withAnimation(transition.animation) {
+                            state = .content
+                        }
+                    }
+                }
+//                .tag(id + "_placeholder")
+//                .matchedGeometryEffect(id: id, in: animation, properties: .size, isSource: false)
+            case .content:
+                content().layoutPriority(100)
+                    .transition(transition.transition)
+                
+//                Rectangle().fill(Color.clear).overlay(content().layoutPriority(100))
+//                    .tag(id + "_content")
+                    
+//                    .matchedGeometryEffect(id: id, in: animation, properties: .size, isSource: true)
+            }
+        }
     }
 }
 
@@ -152,6 +239,7 @@ extension PagedRemoteResourceView where NextPageLoadingIndicatorView == Progress
     }
 }
 
+@available(iOS 14.0, *)
 extension PagedRemoteResourceView {
     @inlinable
     public init(
